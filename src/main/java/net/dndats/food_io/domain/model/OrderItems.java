@@ -1,11 +1,17 @@
 package net.dndats.food_io.domain.model;
 
 import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import net.dndats.food_io.domain.model.pk.OrderEmbeddedId;
 
 @Entity
+@Getter
+@Setter
+@EqualsAndHashCode
 @Table(name = "order_items")
-public class OrderItem {
+public class OrderItems {
 
     @EmbeddedId
     private OrderEmbeddedId id;
@@ -13,12 +19,12 @@ public class OrderItem {
     @ManyToOne
     @MapsId("orderId")
     @JoinColumn(name = "order_id", nullable = false)
-    private Order order;
+    private Orders order;
 
     @ManyToOne
     @MapsId("productId")
     @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    private Products product;
 
     @Column(nullable = false)
     private int quantity;

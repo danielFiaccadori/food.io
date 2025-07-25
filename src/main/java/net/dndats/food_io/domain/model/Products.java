@@ -5,12 +5,14 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Entity
 @Getter
 @Setter
 @EqualsAndHashCode
 @Table(name = "products")
-public class Product {
+public class Products {
 
     @Id @Column(unique = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,10 +24,10 @@ public class Product {
     @Column(nullable = false, length = 100)
     private String description;
 
-    @Column(nullable = true)
+    @Column(name = "image_url", nullable = true)
     private String imageUrl;
 
     @Column(nullable = false)
-    private double price;
+    private BigDecimal price;
 
 }
