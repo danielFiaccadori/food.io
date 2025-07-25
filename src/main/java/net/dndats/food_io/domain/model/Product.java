@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @Setter
 @EqualsAndHashCode
 @Table(name = "products")
-public class Products {
+public class Product {
 
     @Id @Column(unique = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)

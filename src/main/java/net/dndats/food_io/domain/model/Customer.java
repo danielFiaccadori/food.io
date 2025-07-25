@@ -13,14 +13,14 @@ import java.util.UUID;
 @Setter
 @EqualsAndHashCode
 @Table(name = "customers")
-public class Customers {
+public class Customer {
 
     @Id @Column(unique = true)
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID uuid;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Orders> orders;
+    private List<Order> orders;
 
     @Column(nullable = false, length = 50)
     private String username;

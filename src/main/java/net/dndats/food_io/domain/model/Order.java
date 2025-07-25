@@ -14,17 +14,17 @@ import java.util.List;
 @Setter
 @EqualsAndHashCode
 @Table(name = "orders")
-public class Orders {
+public class Order {
 
     @Id @Column(unique = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    private Customers customer;
+    private Customer customer;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItems> products;
+    private List<OrderItem> products;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

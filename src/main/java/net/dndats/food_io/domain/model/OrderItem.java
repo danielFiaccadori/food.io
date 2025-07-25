@@ -11,7 +11,7 @@ import net.dndats.food_io.domain.model.pk.OrderEmbeddedId;
 @Setter
 @EqualsAndHashCode
 @Table(name = "order_items")
-public class OrderItems {
+public class OrderItem {
 
     @EmbeddedId
     private OrderEmbeddedId id;
@@ -19,12 +19,12 @@ public class OrderItems {
     @ManyToOne
     @MapsId("orderId")
     @JoinColumn(name = "order_id", nullable = false)
-    private Orders order;
+    private Order order;
 
     @ManyToOne
     @MapsId("productId")
     @JoinColumn(name = "product_id", nullable = false)
-    private Products product;
+    private Product product;
 
     @Column(nullable = false)
     private int quantity;
