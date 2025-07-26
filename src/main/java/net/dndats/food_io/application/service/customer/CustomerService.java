@@ -10,6 +10,7 @@ import net.dndats.food_io.infrastructure.repository.CustomerRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.awt.print.Pageable;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,8 +27,8 @@ public class CustomerService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public List<CustomerDetailsDTO> findAll() {
-        return customerMapper.toCustomerDetailsDTOList(customerRepository.findAll());
+    public List<CustomerDetailsDTO> findAll(Pageable pageable) {
+        return customerMapper.toCustomerDetailsDTOList(customerRepository.findAll(pageable));
     }
 
     public CustomerDetailsDTO findById(UUID uuid) {

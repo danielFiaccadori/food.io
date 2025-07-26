@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.awt.print.Pageable;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,16 +19,14 @@ import java.util.UUID;
 public class CustomerController {
 
     private final CustomerService service;
-    private final CustomerService customerService;
 
-    public CustomerController(CustomerService service, CustomerService customerService) {
+    public CustomerController(CustomerService service) {
         this.service = service;
-        this.customerService = customerService;
     }
 
     @GetMapping
-    public ResponseEntity<BaseResponse<List<CustomerDetailsDTO>>> findAll() {
-        List<CustomerDetailsDTO> customers = service.findAll();
+    public ResponseEntity<BaseResponse<List<CustomerDetailsDTO>>> findAll(Pageable pageable) {
+        List<CustomerDetailsDTO> customers = service.findAll(pageable);
         return ResponseEntity.ok().body(BaseResponse.ok(customers));
     }
 
@@ -54,9 +53,9 @@ public class CustomerController {
         return ResponseEntity.ok().body(BaseResponse.ok(updatedCustomer, "Customer updated successfully"));
     }
 
-    @DeleteMapping("{/uuid}")
+    @DeleteMapping("/{uuid}")
     public ResponseEntity<BaseResponse<Boolean>> delete(@PathVariable UUID uuid) {
-        customerService.delete(uuid);
+        service.delete(uuid);
         return ResponseEntity.ok().body(BaseResponse.ok(true, "Customer deleted successfully"));
     }
 
