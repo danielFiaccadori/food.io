@@ -1,16 +1,15 @@
-package net.dndats.food_io.interfaces;
+package net.dndats.foodio.interfaces;
 
 import jakarta.validation.Valid;
-import net.dndats.food_io.application.dto.customer.CustomerDetailsDTO;
-import net.dndats.food_io.application.dto.customer.SignUpCustomerRequestDTO;
-import net.dndats.food_io.application.dto.customer.UpdateCustomerRequestDTO;
-import net.dndats.food_io.application.response.BaseResponse;
-import net.dndats.food_io.application.service.customer.CustomerService;
-import org.springframework.http.HttpStatus;
+import net.dndats.foodio.application.dto.customer.CustomerDetailsDTO;
+import net.dndats.foodio.application.dto.customer.UpdateCustomerRequestDTO;
+import net.dndats.foodio.application.response.BaseResponse;
+import net.dndats.foodio.application.service.customer.CustomerService;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.awt.print.Pageable;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,23 +35,16 @@ public class CustomerController {
         return ResponseEntity.ok().body(BaseResponse.ok(customer));
     }
 
-    @PostMapping
-    public ResponseEntity<BaseResponse<CustomerDetailsDTO>> register(
-            @Valid @RequestBody SignUpCustomerRequestDTO signUpRequest
-    ) {
-        CustomerDetailsDTO registeredCustomer = service.register(signUpRequest);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(BaseResponse.ok(registeredCustomer, "Customer registered successfully"));
-    }
-
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping("/{uuid}")
     public ResponseEntity<BaseResponse<CustomerDetailsDTO>> update(
             @PathVariable UUID uuid, @Valid @RequestBody UpdateCustomerRequestDTO requestDTO
     ) {
-        CustomerDetailsDTO updatedCustomer = service.update(uuid, requestDTO);
-        return ResponseEntity.ok().body(BaseResponse.ok(updatedCustomer, "Customer updated successfully"));
+        CustomerDetailsDTO customerResponse = service.update(uuid, requestDTO);
+        return ResponseEntity.ok().body(BaseResponse.ok(customerResponse, "Customer updated successfully"));
     }
 
+    @PreAuthorize("hasRole('CUSTOMER')")
     @DeleteMapping("/{uuid}")
     public ResponseEntity<BaseResponse<Boolean>> delete(@PathVariable UUID uuid) {
         service.delete(uuid);

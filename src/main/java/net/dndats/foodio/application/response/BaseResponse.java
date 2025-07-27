@@ -1,4 +1,4 @@
-package net.dndats.food_io.application.response;
+package net.dndats.foodio.application.response;
 
 import lombok.Getter;
 

@@ -1,9 +1,10 @@
-package net.dndats.food_io.application.dto.customer;
+package net.dndats.foodio.application.dto.security;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import net.dndats.foodio.domain.Role;
 
-public record SignUpCustomerRequestDTO(
+public record SignUpRequest(
         @NotBlank(message = "Username is required")
         String username,
 
@@ -16,6 +17,9 @@ public record SignUpCustomerRequestDTO(
 
         @NotBlank(message = "Phone number is required")
         String phoneNumber,
+
+        @NotBlank(message = "Choose an account type")
+        Role role,
 
         String address
 ) {}
