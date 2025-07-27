@@ -1,4 +1,4 @@
-package net.dndats.food_io;
+package net.dndats.foodio;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,7 +1,7 @@
-package net.dndats.food_io.domain.exception;
+package net.dndats.foodio.domain.exception;
 
 import lombok.extern.slf4j.Slf4j;
-import net.dndats.food_io.application.response.BaseResponse;
+import net.dndats.foodio.application.response.BaseResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

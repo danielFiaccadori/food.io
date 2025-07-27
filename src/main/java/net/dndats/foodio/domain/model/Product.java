@@ -1,4 +1,4 @@
-package net.dndats.food_io.domain.model;
+package net.dndats.foodio.domain.model;
 
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;

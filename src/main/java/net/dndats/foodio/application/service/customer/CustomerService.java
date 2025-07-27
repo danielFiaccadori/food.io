@@ -1,16 +1,17 @@
-package net.dndats.food_io.application.service.customer;
+package net.dndats.foodio.application.service.customer;
 
-import net.dndats.food_io.adapters.mapper.CustomerMapper;
-import net.dndats.food_io.application.dto.customer.CustomerDetailsDTO;
-import net.dndats.food_io.application.dto.customer.SignUpCustomerRequestDTO;
-import net.dndats.food_io.application.dto.customer.UpdateCustomerRequestDTO;
-import net.dndats.food_io.domain.exception.CustomerNotFoundException;
-import net.dndats.food_io.domain.model.Customer;
-import net.dndats.food_io.infrastructure.repository.CustomerRepository;
+import net.dndats.foodio.adapters.mapper.CustomerMapper;
+import net.dndats.foodio.application.dto.customer.CustomerDetailsDTO;
+import net.dndats.foodio.application.dto.security.SignUpRequest;
+import net.dndats.foodio.application.dto.customer.UpdateCustomerRequestDTO;
+import net.dndats.foodio.domain.exception.CustomerNotFoundException;
+import net.dndats.foodio.domain.model.Customer;
+import net.dndats.foodio.infrastructure.repository.CustomerRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.awt.print.Pageable;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,7 +29,8 @@ public class CustomerService {
     }
 
     public List<CustomerDetailsDTO> findAll(Pageable pageable) {
-        return customerMapper.toCustomerDetailsDTOList(customerRepository.findAll(pageable));
+        Page<Customer> page = customerRepository.findAll(pageable);
+        return page.stream().map(customerMapper::toCustomerDetailsDTO).toList();
     }
 
     public CustomerDetailsDTO findById(UUID uuid) {
@@ -37,7 +39,7 @@ public class CustomerService {
         return customerMapper.toCustomerDetailsDTO(customer);
     }
 
-    public CustomerDetailsDTO register(SignUpCustomerRequestDTO signUpRequestDTO) {
+    public CustomerDetailsDTO register(SignUpRequest signUpRequestDTO) {
         Customer toRegisterUse = customerMapper.toCustomer(signUpRequestDTO);
 
         // Generates an encoded password

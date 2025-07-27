@@ -1,6 +1,6 @@
-package net.dndats.food_io.infrastructure.repository;
+package net.dndats.foodio.infrastructure.repository;
 
-import net.dndats.food_io.domain.model.Order;
+import net.dndats.foodio.domain.model.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

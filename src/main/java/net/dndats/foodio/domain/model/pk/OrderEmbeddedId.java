@@ -1,4 +1,4 @@
-package net.dndats.food_io.domain.model.pk;
+package net.dndats.foodio.domain.model.pk;
 
 import jakarta.persistence.Embeddable;
 

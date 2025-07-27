@@ -1,4 +1,4 @@
-package net.dndats.food_io.application.dto.customer;
+package net.dndats.foodio.application.dto.customer;
 
 public record UpdateCustomerRequestDTO(
         String username,

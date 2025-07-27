@@ -1,10 +1,10 @@
-package net.dndats.food_io.domain.model;
+package net.dndats.foodio.domain.model;
 
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import net.dndats.food_io.domain.model.pk.OrderEmbeddedId;
+import net.dndats.foodio.domain.model.pk.OrderEmbeddedId;
 
 @Entity
 @Getter
