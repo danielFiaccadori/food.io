@@ -31,7 +31,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             return new User(
                     customer.getEmail(),
                     customer.getPassword(),
-                    Collections.singletonList(new SimpleGrantedAuthority("CUSTOMER"))
+                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_CUSTOMER"))
             );
         }
 
