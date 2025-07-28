@@ -1,7 +1,7 @@
 package net.dndats.foodio.adapters.mapper;
 
 import net.dndats.foodio.application.dto.customer.CustomerDetailsDTO;
-import net.dndats.foodio.application.dto.security.SignUpRequest;
+import net.dndats.foodio.application.dto.customer.SignUpCustomerRequest;
 import net.dndats.foodio.domain.model.Customer;
 import org.mapstruct.Mapper;
 
@@ -9,6 +9,6 @@ import org.mapstruct.Mapper;
 public interface CustomerMapper {
 
     CustomerDetailsDTO toCustomerDetailsDTO(Customer customer);
-    Customer toCustomer(SignUpRequest signUpRequestMessage);
+    Customer toCustomerSignUpRequest(SignUpCustomerRequest signUpRequestMessage);
 
 }

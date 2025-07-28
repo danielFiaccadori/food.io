@@ -24,6 +24,10 @@ public class Product {
     @Column(nullable = false, length = 100)
     private String description;
 
+    @ManyToOne
+    @JoinColumn(name = "restaurant_uuid")
+    private Restaurant restaurant;
+
     @Column(name = "image_url", nullable = true)
     private String imageUrl;
 

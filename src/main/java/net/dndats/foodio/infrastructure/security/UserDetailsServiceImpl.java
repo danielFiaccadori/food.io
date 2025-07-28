@@ -1,7 +1,9 @@
 package net.dndats.foodio.infrastructure.security;
 
 import net.dndats.foodio.domain.model.Customer;
+import net.dndats.foodio.domain.model.Restaurant;
 import net.dndats.foodio.infrastructure.repository.CustomerRepository;
+import net.dndats.foodio.infrastructure.repository.RestaurantRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,11 +18,11 @@ import java.util.Optional;
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final CustomerRepository customerRepository;
-    // private final RestaurantRepository restaurantRepository;
+    private final RestaurantRepository restaurantRepository;
 
-    public UserDetailsServiceImpl(CustomerRepository customerRepository /*, RestaurantRepository */) {
+    public UserDetailsServiceImpl(CustomerRepository customerRepository, RestaurantRepository restaurantRepository) {
         this.customerRepository = customerRepository;
-        // this.restaurantRepository = restaurantRepository;
+         this.restaurantRepository = restaurantRepository;
     }
 
     @Override
@@ -35,15 +37,15 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             );
         }
 
-        // Optional<Restaurant> restaurantOpt = restaurantRepository.findByEmail(email);
-        // if (restaurantOpt.isPresent()) {
-        //     Restaurant restaurant = restaurantOpt.get();
-        //     return new User(
-        //         restaurant.getEmail(),
-        //         restaurant.getPassword(),
-        //         Collections.singletonList(new SimpleGrantedAuthority("ROLE_RESTAURANT"))
-        //     );
-        // }
+         Optional<Restaurant> restaurantOpt = restaurantRepository.findByEmail(email);
+         if (restaurantOpt.isPresent()) {
+             Restaurant restaurant = restaurantOpt.get();
+             return new User(
+                 restaurant.getEmail(),
+                 restaurant.getPassword(),
+                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_RESTAURANT"))
+             );
+         }
 
         throw new UsernameNotFoundException("User not found with email: " + email);
     }

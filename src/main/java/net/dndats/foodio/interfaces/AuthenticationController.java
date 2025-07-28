@@ -1,11 +1,13 @@
 package net.dndats.foodio.interfaces;
 
-import net.dndats.foodio.application.dto.customer.CustomerDetailsDTO;
+import jakarta.validation.Valid;
+import net.dndats.foodio.application.dto.customer.SignUpCustomerRequest;
+import net.dndats.foodio.application.dto.restaurant.SignUpRestaurantRequest;
 import net.dndats.foodio.application.dto.security.AuthenticationResponse;
 import net.dndats.foodio.application.dto.security.LoginRequest;
-import net.dndats.foodio.application.dto.security.SignUpRequest;
 import net.dndats.foodio.application.response.BaseResponse;
-import net.dndats.foodio.application.service.customer.CustomerService;
+import net.dndats.foodio.application.service.CustomerService;
+import net.dndats.foodio.application.service.RestaurantService;
 import net.dndats.foodio.infrastructure.security.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,32 +29,36 @@ public class AuthenticationController {
 
     // Login/SignUp dependencies
     private final CustomerService customerService;
+    private final RestaurantService restaurantService;
 
-    public AuthenticationController(AuthenticationManager authManager, JwtService jwtService, CustomerService customerService) {
+    public AuthenticationController(AuthenticationManager authManager, JwtService jwtService, CustomerService customerService, RestaurantService restaurantService) {
         this.authManager = authManager;
         this.jwtService = jwtService;
         this.customerService = customerService;
+        this.restaurantService = restaurantService;
     }
 
-    @PostMapping
-    public ResponseEntity<BaseResponse<AuthenticationResponse>> register(@RequestBody SignUpRequest request) {
-        switch (request.role()) {
-            case CUSTOMER -> {
-                CustomerDetailsDTO details = customerService.register(request);
-            }
-            case RESTAURANT -> {
-                // TODO: Implement restaurant registration logic
-            }
-        }
+    @PostMapping("/register/customer")
+    public ResponseEntity<BaseResponse<AuthenticationResponse>> registerCustomer(@RequestBody @Valid SignUpCustomerRequest request) {
+        customerService.register(request);
+        return authenticate(request.email(), request.password(), "Successfully registered as customer!");
+    }
 
+    @PostMapping("/register/restaurant")
+    public ResponseEntity<BaseResponse<AuthenticationResponse>> registerRestaurant(@RequestBody @Valid SignUpRestaurantRequest request) {
+        restaurantService.register(request);
+        return authenticate(request.email(), request.password(), "Successfully registered as restaurant!");
+    }
+
+    private ResponseEntity<BaseResponse<AuthenticationResponse>> authenticate(String email, String password, String message) {
         Authentication authentication = authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.email(), request.password())
+                new UsernamePasswordAuthenticationToken(email, password)
         );
 
         UserDetails details = (UserDetails) authentication.getPrincipal();
         String token = jwtService.generateToken(details);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(BaseResponse.ok(new AuthenticationResponse("Successfully registered! ", token)));
+                .body(BaseResponse.ok(new AuthenticationResponse(message, token)));
     }
 
     @PostMapping("/login")

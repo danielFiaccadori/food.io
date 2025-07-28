@@ -4,12 +4,13 @@ import jakarta.validation.Valid;
 import net.dndats.foodio.application.dto.customer.CustomerDetailsDTO;
 import net.dndats.foodio.application.dto.customer.UpdateCustomerRequestDTO;
 import net.dndats.foodio.application.response.BaseResponse;
-import net.dndats.foodio.application.service.customer.CustomerService;
+import net.dndats.foodio.application.service.CustomerService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,18 +38,18 @@ public class CustomerController {
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping("/{uuid}")
-    public ResponseEntity<BaseResponse<CustomerDetailsDTO>> update(
+    public ResponseEntity<BaseResponse<Boolean>> update(
             @PathVariable UUID uuid, @Valid @RequestBody UpdateCustomerRequestDTO requestDTO
-    ) {
-        CustomerDetailsDTO customerResponse = service.update(uuid, requestDTO);
-        return ResponseEntity.ok().body(BaseResponse.ok(customerResponse, "Customer updated successfully"));
+    ) throws AccessDeniedException {
+        boolean success = service.update(uuid, requestDTO);
+        return ResponseEntity.ok().body(BaseResponse.ok(success, "Customer updated successfully"));
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @DeleteMapping("/{uuid}")
-    public ResponseEntity<BaseResponse<Boolean>> delete(@PathVariable UUID uuid) {
-        service.delete(uuid);
-        return ResponseEntity.ok().body(BaseResponse.ok(true, "Customer deleted successfully"));
+    public ResponseEntity<BaseResponse<Boolean>> delete(@PathVariable UUID uuid) throws AccessDeniedException {
+        boolean success = service.delete(uuid);
+        return ResponseEntity.ok().body(BaseResponse.ok(success, "Customer deleted successfully"));
     }
 
 }
