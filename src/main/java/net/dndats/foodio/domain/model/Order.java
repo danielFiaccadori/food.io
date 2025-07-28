@@ -23,6 +23,10 @@ public class Order {
     @ManyToOne
     private Customer customer;
 
+    @ManyToOne
+    @JoinColumn(name = "restaurant_uuid", nullable = false)
+    private Restaurant restaurant;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> products;
 

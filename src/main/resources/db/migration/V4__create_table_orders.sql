@@ -3,7 +3,8 @@ CREATE TABLE orders (
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     customer_uuid UUID NOT NULL,
+    restaurant_uuid UUID NOT NULL,
 
-    -- Has other side relation with order item
-    CONSTRAINT customer_uuid_fk FOREIGN KEY (customer_uuid) REFERENCES customers(uuid)
+    CONSTRAINT customer_uuid_fk FOREIGN KEY (customer_uuid) REFERENCES customers(uuid),
+    CONSTRAINT restaurant_uuid_fk FOREIGN KEY (restaurant_uuid) REFERENCES restaurants(uuid)
 );
