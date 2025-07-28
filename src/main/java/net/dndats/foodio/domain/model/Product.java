@@ -28,7 +28,7 @@ public class Product {
     @JoinColumn(name = "restaurant_uuid")
     private Restaurant restaurant;
 
-    @Column(name = "image_url", nullable = true)
+    @Column(name = "image_url")
     private String imageUrl;
 
     @Column(nullable = false)

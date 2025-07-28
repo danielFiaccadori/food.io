@@ -41,7 +41,7 @@ public class CustomerService {
         return mapper.toCustomerDetailsDTO(customer);
     }
 
-    public CustomerDetailsDTO register(SignUpCustomerRequest request) {
+    public void register(SignUpCustomerRequest request) {
         Customer toRegisterUse = mapper.toCustomerSignUpRequest(request);
 
         // Generates an encoded password
@@ -49,7 +49,7 @@ public class CustomerService {
         toRegisterUse.setPassword(passwordEncoded);
 
         Customer toSaveCustomer = repository.save(toRegisterUse);
-        return mapper.toCustomerDetailsDTO(toSaveCustomer);
+        mapper.toCustomerDetailsDTO(toSaveCustomer);
     }
 
     public boolean update(UUID toUpdateUUID, UpdateCustomerRequestDTO updateRequestDTO) throws AccessDeniedException {

@@ -1,6 +1,7 @@
 package net.dndats.foodio.application.dto.restaurant;
 
-import net.dndats.foodio.domain.model.Product;
+import net.dndats.foodio.application.dto.order.OrderDetailsDTO;
+import net.dndats.foodio.application.dto.product.ProductDetailsDTO;
 
 import java.util.List;
 import java.util.UUID;
@@ -12,6 +13,6 @@ public record RestaurantDetailsDTO(
         String email,
         String imageUrl,
         Boolean isOpen,
-        // Later, move to DTO
-        List<Product> stock
+        List<ProductDetailsDTO> stock,
+        List<OrderDetailsDTO> orders
 ) {}

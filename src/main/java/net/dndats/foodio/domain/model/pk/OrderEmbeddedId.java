@@ -1,10 +1,14 @@
 package net.dndats.foodio.domain.model.pk;
 
 import jakarta.persistence.Embeddable;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.Objects;
 
+@Getter
+@Setter
 @Embeddable
 public class OrderEmbeddedId implements Serializable {
 

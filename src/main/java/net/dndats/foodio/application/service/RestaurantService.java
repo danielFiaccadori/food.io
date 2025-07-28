@@ -1,12 +1,16 @@
 package net.dndats.foodio.application.service;
 
+import net.dndats.foodio.adapters.mapper.ProductMapper;
 import net.dndats.foodio.adapters.mapper.RestaurantMapper;
+import net.dndats.foodio.application.dto.product.ProductDetailsDTO;
 import net.dndats.foodio.application.dto.restaurant.RestaurantDetailsDTO;
 import net.dndats.foodio.application.dto.restaurant.SignUpRestaurantRequest;
 import net.dndats.foodio.application.dto.restaurant.UpdateRestaurantRequestDTO;
 import net.dndats.foodio.domain.exception.CustomerNotFoundException;
 import net.dndats.foodio.domain.exception.RestaurantNotFoundException;
+import net.dndats.foodio.domain.model.Product;
 import net.dndats.foodio.domain.model.Restaurant;
+import net.dndats.foodio.infrastructure.repository.ProductRepository;
 import net.dndats.foodio.infrastructure.repository.RestaurantRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,14 +26,28 @@ import java.util.UUID;
 public class RestaurantService {
 
     private final RestaurantRepository repository;
+    private final ProductRepository productRepository;
     private final RestaurantMapper mapper;
+    private final ProductMapper productMapper;
     private final PasswordEncoder passwordEncoder;
 
-    public RestaurantService(RestaurantRepository repository, RestaurantMapper mapper, PasswordEncoder passwordEncoder) {
+    public RestaurantService(RestaurantRepository repository, ProductRepository productRepository, RestaurantMapper mapper, ProductMapper productMapper, PasswordEncoder passwordEncoder) {
         this.repository = repository;
+        this.productRepository = productRepository;
         this.mapper = mapper;
+        this.productMapper = productMapper;
         this.passwordEncoder = passwordEncoder;
     }
+
+    // Operations
+
+    public List<ProductDetailsDTO> findAllProducts(Pageable pageable) {
+        Page<Product> page = productRepository.findAll(pageable);
+        return page.stream()
+                .map(productMapper::toDetailsDTO).toList();
+    }
+
+    // CRUD
 
     public List<RestaurantDetailsDTO> findAll(Pageable pageable) {
         Page<Restaurant> page = repository.findAll(pageable);
@@ -42,7 +60,7 @@ public class RestaurantService {
         return mapper.toDetailsDTO(restaurant);
     }
 
-    public RestaurantDetailsDTO register(SignUpRestaurantRequest request) {
+    public void register(SignUpRestaurantRequest request) {
         Restaurant toRegisterRestaurant = mapper.toRestaurantSignUpRequest(request);
 
         // Generates an encoded password
@@ -50,7 +68,7 @@ public class RestaurantService {
         toRegisterRestaurant.setPassword(passwordEncoded);
 
         Restaurant toSave = repository.save(toRegisterRestaurant);
-        return mapper.toDetailsDTO(toSave);
+        mapper.toDetailsDTO(toSave);
     }
 
     public boolean update(UUID toUpdateUUID, UpdateRestaurantRequestDTO updateRequestDTO) throws AccessDeniedException {
