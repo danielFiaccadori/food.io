@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>net.dndats</groupId>
-	<artifactId>io-back</artifactId>
+	<artifactId>food.io</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>food.io</name>
 	<description>Uma API capaz de fazer o gerenciamento básico de pedidos feitos por um estabelecimento de alimentação.</description>

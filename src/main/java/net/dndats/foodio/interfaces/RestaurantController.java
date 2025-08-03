@@ -2,18 +2,20 @@ package net.dndats.foodio.interfaces;
 
 import jakarta.validation.Valid;
 import net.dndats.foodio.application.dto.order.OrderDetailsDTO;
-import net.dndats.foodio.application.dto.product.ProductDetailsDTO;
 import net.dndats.foodio.application.dto.restaurant.RestaurantDetailsDTO;
+import net.dndats.foodio.application.dto.restaurant.RestaurantFinancialStatisticsDTO;
 import net.dndats.foodio.application.dto.restaurant.UpdateRestaurantRequestDTO;
 import net.dndats.foodio.application.response.BaseResponse;
 import net.dndats.foodio.application.service.OrderService;
 import net.dndats.foodio.application.service.RestaurantService;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,10 +44,37 @@ public class RestaurantController {
     }
 
     @PreAuthorize("hasRole('RESTAURANT')")
+    @PutMapping("/{uuid}/orders/accept")
+    public ResponseEntity<BaseResponse<Boolean>> acceptOrder(
+            @PathVariable UUID uuid, @RequestParam Long orderId) throws AccessDeniedException {
+        boolean success = orderService.acceptOrder(uuid, orderId);
+        return ResponseEntity.ok().body(BaseResponse.ok(success));
+    }
+
+    @PreAuthorize("hasRole('RESTAURANT')")
+    @PutMapping("/{uuid}/orders/reject")
+    public ResponseEntity<BaseResponse<Boolean>> rejectOrder(
+            @PathVariable UUID uuid, @RequestParam Long orderId) throws AccessDeniedException {
+        boolean success = orderService.rejectOrder(uuid, orderId);
+        return ResponseEntity.ok().body(BaseResponse.ok(success));
+    }
+
+    @PreAuthorize("hasRole('RESTAURANT')")
     @GetMapping("/{uuid}/orders")
     public ResponseEntity<BaseResponse<List<OrderDetailsDTO>>> getOrders(@PathVariable UUID uuid) {
         List<OrderDetailsDTO> orders = orderService.findOrdersForRestaurant(uuid);
         return ResponseEntity.ok().body(BaseResponse.ok(orders));
+    }
+
+    @PreAuthorize("hasRole('RESTAURANT')")
+    @GetMapping("/{uuid}/orders/statistics")
+    public ResponseEntity<BaseResponse<RestaurantFinancialStatisticsDTO>> getOrderStatistics(
+            @PathVariable UUID uuid,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime endDate
+    ) {
+        var statistics = service.getStatistics(uuid, startDate, endDate);
+        return ResponseEntity.ok().body(BaseResponse.ok(statistics, "Order statistics retrieved successfully"));
     }
 
     @PreAuthorize("hasRole('RESTAURANT')")

@@ -5,6 +5,7 @@ import net.dndats.foodio.application.dto.order.CreateOrderItemDTO;
 import net.dndats.foodio.application.dto.order.CreateOrderRequestDTO;
 import net.dndats.foodio.application.dto.order.OrderDetailsDTO;
 import net.dndats.foodio.domain.exception.CustomerNotFoundException;
+import net.dndats.foodio.domain.exception.OrderNotFoundException;
 import net.dndats.foodio.domain.exception.ProductNotFoundException;
 import net.dndats.foodio.domain.exception.RestaurantNotFoundException;
 import net.dndats.foodio.domain.model.*;
@@ -41,6 +42,30 @@ public class OrderService {
         this.customerRepository = customerRepository;
         this.restaurantRepository = restaurantRepository;
         this.orderMapper = orderMapper;
+    }
+
+    // Operations
+
+    public boolean rejectOrder(UUID uuid, Long orderId) throws AccessDeniedException{
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+        if (!canExecutePrivateAction(uuid)) return false;
+
+        order.setOrderStatus(OrderStatus.REJECTED);
+        orderRepository.save(order);
+
+        return true;
+    }
+
+    public boolean acceptOrder(UUID uuid, Long orderId) throws AccessDeniedException {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+        if (!canExecutePrivateAction(uuid)) return false;
+
+        order.setOrderStatus(OrderStatus.ACCEPTED);
+        orderRepository.save(order);
+
+        return true;
     }
 
     // Locate orders
@@ -104,6 +129,21 @@ public class OrderService {
 
         order.setProducts(orderItems);
         orderRepository.save(order);
+
+        return true;
+    }
+
+    /**
+     * This method grants a user only can execute update/delete actions with its own profile
+     */
+    private boolean canExecutePrivateAction(UUID uuid) throws AccessDeniedException {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Restaurant toVerifyIfCanExecute = restaurantRepository.findByEmail(email)
+                .orElseThrow(() -> new RestaurantNotFoundException(uuid));
+
+        if (!toVerifyIfCanExecute.getUuid().equals(uuid)) {
+            throw new AccessDeniedException("You do not have permission to perform this action.");
+        }
 
         return true;
     }

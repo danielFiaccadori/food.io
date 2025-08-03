@@ -27,6 +27,10 @@ public class Order {
     @JoinColumn(name = "restaurant_uuid", nullable = false)
     private Restaurant restaurant;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "order_status", nullable = false)
+    private OrderStatus orderStatus;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> products;
 

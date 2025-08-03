@@ -4,10 +4,13 @@ import net.dndats.foodio.adapters.mapper.ProductMapper;
 import net.dndats.foodio.adapters.mapper.RestaurantMapper;
 import net.dndats.foodio.application.dto.product.ProductDetailsDTO;
 import net.dndats.foodio.application.dto.restaurant.RestaurantDetailsDTO;
+import net.dndats.foodio.application.dto.restaurant.RestaurantFinancialStatisticsDTO;
 import net.dndats.foodio.application.dto.restaurant.SignUpRestaurantRequest;
 import net.dndats.foodio.application.dto.restaurant.UpdateRestaurantRequestDTO;
 import net.dndats.foodio.domain.exception.CustomerNotFoundException;
 import net.dndats.foodio.domain.exception.RestaurantNotFoundException;
+import net.dndats.foodio.domain.model.Order;
+import net.dndats.foodio.domain.model.OrderItem;
 import net.dndats.foodio.domain.model.Product;
 import net.dndats.foodio.domain.model.Restaurant;
 import net.dndats.foodio.infrastructure.repository.ProductRepository;
@@ -19,8 +22,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Service
 public class RestaurantService {
@@ -40,6 +46,37 @@ public class RestaurantService {
     }
 
     // Operations
+
+    public RestaurantFinancialStatisticsDTO getStatistics(UUID uuid, LocalDateTime start, LocalDateTime end) {
+        Restaurant restaurant = repository.findById(uuid)
+                .orElseThrow(() -> new RestaurantNotFoundException(uuid));
+
+        List<Order> orders = restaurant.getOrders();
+
+        Stream<OrderItem> filteredItems = orders.stream()
+                .filter(order -> {
+                    LocalDateTime createdAt = order.getCreatedAt();
+                    return (start == null || !createdAt.isBefore(start)) &&
+                            (end == null || !createdAt.isAfter(end));
+                }).flatMap(order -> order.getProducts().stream());
+
+        DoubleSummaryStatistics statistics = filteredItems
+                .map(OrderItem::getProduct)
+                .mapToDouble(p -> p.getPrice().doubleValue())
+                .summaryStatistics();
+
+        if (statistics.getCount() == 0) {
+            return new RestaurantFinancialStatisticsDTO(0L, 0.0, 0.0, 0.0, 0.0);
+        }
+
+        return new RestaurantFinancialStatisticsDTO(
+                statistics.getCount(),
+                statistics.getSum(),
+                statistics.getAverage(),
+                statistics.getMax(),
+                statistics.getMin()
+        );
+    }
 
     public List<ProductDetailsDTO> findAllProducts(Pageable pageable) {
         Page<Product> page = productRepository.findAll(pageable);

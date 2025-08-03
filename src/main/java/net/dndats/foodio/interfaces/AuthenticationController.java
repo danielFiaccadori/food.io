@@ -39,26 +39,17 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register/customer")
-    public ResponseEntity<BaseResponse<AuthenticationResponse>> registerCustomer(@RequestBody @Valid SignUpCustomerRequest request) {
+    public ResponseEntity<BaseResponse<String>> registerCustomer(@RequestBody @Valid SignUpCustomerRequest request) {
         customerService.register(request);
-        return authenticate(request.email(), request.password(), "Successfully registered as customer!");
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(BaseResponse.ok("Customer registered successfully"));
     }
 
     @PostMapping("/register/restaurant")
-    public ResponseEntity<BaseResponse<AuthenticationResponse>> registerRestaurant(@RequestBody @Valid SignUpRestaurantRequest request) {
+    public ResponseEntity<BaseResponse<String>> registerRestaurant(@RequestBody @Valid SignUpRestaurantRequest request) {
         restaurantService.register(request);
-        return authenticate(request.email(), request.password(), "Successfully registered as restaurant!");
-    }
-
-    private ResponseEntity<BaseResponse<AuthenticationResponse>> authenticate(String email, String password, String message) {
-        Authentication authentication = authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, password)
-        );
-
-        UserDetails details = (UserDetails) authentication.getPrincipal();
-        String token = jwtService.generateToken(details);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(BaseResponse.ok(new AuthenticationResponse(message, token)));
+                .body(BaseResponse.ok("Restaurant registered successfully"));
     }
 
     @PostMapping("/login")
