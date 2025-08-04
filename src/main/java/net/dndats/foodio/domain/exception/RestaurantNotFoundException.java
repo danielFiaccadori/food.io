@@ -5,4 +5,9 @@ import java.util.UUID;
 public class RestaurantNotFoundException extends RuntimeException {
     public RestaurantNotFoundException(UUID uuid) {
         super("Restaurant not found with UUID: " + uuid);
-    }}
+    }
+
+    public RestaurantNotFoundException(String message) {
+        super(message);
+    }
+}

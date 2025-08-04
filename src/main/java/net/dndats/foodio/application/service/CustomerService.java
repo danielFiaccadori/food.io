@@ -52,10 +52,11 @@ public class CustomerService {
         mapper.toCustomerDetailsDTO(toSaveCustomer);
     }
 
-    public boolean update(UUID toUpdateUUID, UpdateCustomerRequestDTO updateRequestDTO) throws AccessDeniedException {
-        Customer toUpdateCustomer = repository.findById(toUpdateUUID)
-                .orElseThrow(() -> new CustomerNotFoundException(toUpdateUUID));
-        if (!canExecutePrivateAction(toUpdateUUID)) return false;
+    public boolean update(UpdateCustomerRequestDTO updateRequestDTO) throws AccessDeniedException {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Customer toUpdateCustomer = repository.findByEmail(email)
+                .orElseThrow(() -> new CustomerNotFoundException("Authenticated customer not found!"));
 
         toUpdateCustomer.setAddress(updateRequestDTO.address());
         toUpdateCustomer.setUsername(updateRequestDTO.username());
@@ -65,27 +66,13 @@ public class CustomerService {
         return true;
     }
 
-    public boolean delete(UUID uuid) throws AccessDeniedException {
-        Customer customer = repository.findById(uuid)
-                .orElseThrow(() -> new CustomerNotFoundException(uuid));
-        if (!canExecutePrivateAction(uuid)) return false;
+    public boolean delete() throws AccessDeniedException {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Customer customer = repository.findByEmail(email)
+                .orElseThrow(() -> new CustomerNotFoundException("Authenticated customer not found!"));
 
         repository.delete(customer);
-        return true;
-    }
-
-    /**
-     * This method grants a user only can execute update/delete actions with its own profile
-     */
-    private boolean canExecutePrivateAction(UUID uuid) throws AccessDeniedException {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        Customer toVerifyIfCanExecute = repository.findByEmail(email)
-                .orElseThrow(() -> new CustomerNotFoundException(uuid));
-
-        if (!toVerifyIfCanExecute.getUuid().equals(uuid)) {
-            throw new AccessDeniedException("You do not have permission to perform this action.");
-        }
-
         return true;
     }
 

@@ -41,9 +41,9 @@ public class CustomerController {
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
-    @GetMapping("/{uuid}/orders")
-    public ResponseEntity<BaseResponse<List<OrderDetailsDTO>>> getOrders(@PathVariable UUID uuid) {
-        List<OrderDetailsDTO> orders = orderService.findOrdersForCustomer(uuid);
+    @GetMapping("/orders")
+    public ResponseEntity<BaseResponse<List<OrderDetailsDTO>>> getOrders() {
+        List<OrderDetailsDTO> orders = orderService.findOrdersForCustomer();
         return ResponseEntity.ok().body(BaseResponse.ok(orders));
     }
 
@@ -55,18 +55,18 @@ public class CustomerController {
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
-    @PutMapping("/{uuid}")
+    @PutMapping("/update")
     public ResponseEntity<BaseResponse<Boolean>> update(
-            @PathVariable UUID uuid, @Valid @RequestBody UpdateCustomerRequestDTO requestDTO
+            @Valid @RequestBody UpdateCustomerRequestDTO requestDTO
     ) {
-        boolean success = service.update(uuid, requestDTO);
+        boolean success = service.update(requestDTO);
         return ResponseEntity.ok().body(BaseResponse.ok(success, "Customer updated successfully"));
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
-    @DeleteMapping("/{uuid}")
-    public ResponseEntity<BaseResponse<Boolean>> delete(@PathVariable UUID uuid) {
-        boolean success = service.delete(uuid);
+    @DeleteMapping("/delete")
+    public ResponseEntity<BaseResponse<Boolean>> delete() {
+        boolean success = service.delete();
         return ResponseEntity.ok().body(BaseResponse.ok(success, "Customer deleted successfully"));
     }
 

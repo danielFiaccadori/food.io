@@ -44,51 +44,48 @@ public class RestaurantController {
     }
 
     @PreAuthorize("hasRole('RESTAURANT')")
-    @PutMapping("/{uuid}/orders/accept")
-    public ResponseEntity<BaseResponse<Boolean>> acceptOrder(
-            @PathVariable UUID uuid, @RequestParam Long orderId) throws AccessDeniedException {
-        boolean success = orderService.acceptOrder(uuid, orderId);
+    @PutMapping("/orders/accept")
+    public ResponseEntity<BaseResponse<Boolean>> acceptOrder(@RequestParam Long orderId) throws AccessDeniedException {
+        boolean success = orderService.acceptOrder(orderId);
         return ResponseEntity.ok().body(BaseResponse.ok(success));
     }
 
     @PreAuthorize("hasRole('RESTAURANT')")
-    @PutMapping("/{uuid}/orders/reject")
-    public ResponseEntity<BaseResponse<Boolean>> rejectOrder(
-            @PathVariable UUID uuid, @RequestParam Long orderId) throws AccessDeniedException {
-        boolean success = orderService.rejectOrder(uuid, orderId);
+    @PutMapping("/orders/reject")
+    public ResponseEntity<BaseResponse<Boolean>> rejectOrder(@RequestParam Long orderId) throws AccessDeniedException {
+        boolean success = orderService.rejectOrder(orderId);
         return ResponseEntity.ok().body(BaseResponse.ok(success));
     }
 
     @PreAuthorize("hasRole('RESTAURANT')")
-    @GetMapping("/{uuid}/orders")
-    public ResponseEntity<BaseResponse<List<OrderDetailsDTO>>> getOrders(@PathVariable UUID uuid) {
-        List<OrderDetailsDTO> orders = orderService.findOrdersForRestaurant(uuid);
+    @GetMapping("/orders")
+    public ResponseEntity<BaseResponse<List<OrderDetailsDTO>>> getOrders() {
+        List<OrderDetailsDTO> orders = orderService.findOrdersForRestaurant();
         return ResponseEntity.ok().body(BaseResponse.ok(orders));
     }
 
     @PreAuthorize("hasRole('RESTAURANT')")
-    @GetMapping("/{uuid}/orders/statistics")
+    @GetMapping("/orders/statistics")
     public ResponseEntity<BaseResponse<RestaurantFinancialStatisticsDTO>> getOrderStatistics(
-            @PathVariable UUID uuid,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)LocalDateTime endDate
     ) {
-        var statistics = service.getStatistics(uuid, startDate, endDate);
+        var statistics = service.getStatistics(startDate, endDate);
         return ResponseEntity.ok().body(BaseResponse.ok(statistics, "Order statistics retrieved successfully"));
     }
 
     @PreAuthorize("hasRole('RESTAURANT')")
-    @PutMapping("/{uuid}")
+    @PutMapping("/update")
     public ResponseEntity<BaseResponse<Boolean>> update(
-            @PathVariable UUID uuid, @Valid UpdateRestaurantRequestDTO requestDTO) throws AccessDeniedException {
-        boolean success = service.update(uuid, requestDTO);
+            @Valid UpdateRestaurantRequestDTO requestDTO) throws AccessDeniedException {
+        boolean success = service.update(requestDTO);
         return ResponseEntity.ok().body(BaseResponse.ok(success, "Restaurant updated successfully"));
     }
 
     @PreAuthorize("hasRole('RESTAURANT')")
-    @DeleteMapping("/{uuid}")
-    public ResponseEntity<BaseResponse<Boolean>> delete(@PathVariable UUID uuid) throws AccessDeniedException {
-        boolean success = service.delete(uuid);
+    @DeleteMapping("/delete")
+    public ResponseEntity<BaseResponse<Boolean>> delete() throws AccessDeniedException {
+        boolean success = service.delete();
         return ResponseEntity.ok().body(BaseResponse.ok(success, "Restaurant deleted successfully"));
     }
 

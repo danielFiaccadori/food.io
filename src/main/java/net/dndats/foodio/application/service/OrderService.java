@@ -46,10 +46,16 @@ public class OrderService {
 
     // Operations
 
-    public boolean rejectOrder(UUID uuid, Long orderId) throws AccessDeniedException{
+    public boolean rejectOrder(Long orderId) throws AccessDeniedException{
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
-        if (!canExecutePrivateAction(uuid)) return false;
+
+        Restaurant restaurant = restaurantRepository.findByEmail(order.getRestaurant().getEmail())
+                .orElseThrow(() -> new RestaurantNotFoundException("Authenticated restaurant not found!"));
+
+        if (!order.getRestaurant().getUuid().equals(restaurant.getUuid())) {
+            throw new AccessDeniedException("You do not have permission to reject this order.");
+        }
 
         order.setOrderStatus(OrderStatus.REJECTED);
         orderRepository.save(order);
@@ -57,10 +63,16 @@ public class OrderService {
         return true;
     }
 
-    public boolean acceptOrder(UUID uuid, Long orderId) throws AccessDeniedException {
+    public boolean acceptOrder(Long orderId) throws AccessDeniedException {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
-        if (!canExecutePrivateAction(uuid)) return false;
+
+        Restaurant restaurant = restaurantRepository.findByEmail(order.getRestaurant().getEmail())
+                .orElseThrow(() -> new RestaurantNotFoundException("Authenticated restaurant not found!"));
+
+        if (!order.getRestaurant().getUuid().equals(restaurant.getUuid())) {
+            throw new AccessDeniedException("You do not have permission to accept this order.");
+        }
 
         order.setOrderStatus(OrderStatus.ACCEPTED);
         orderRepository.save(order);
@@ -70,39 +82,39 @@ public class OrderService {
 
     // Locate orders
 
-    public List<OrderDetailsDTO> findOrdersForCustomer(UUID customerUUID) throws AccessDeniedException {
-        Customer customer = customerRepository.findById(customerUUID)
-                .orElseThrow(() -> new CustomerNotFoundException(customerUUID));
+    public List<OrderDetailsDTO> findOrdersForCustomer() throws AccessDeniedException {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        if (!customer.getEmail().equals(email)) {
-            throw new AccessDeniedException("You do not have permission to view this customer's orders.");
-        }
+        Customer customer = customerRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomerNotFoundException("Authenticated customer not found!"));
 
-        List<Order> orders = orderRepository.findByCustomerUUID(customerUUID);
+        List<Order> orders = orderRepository.findByCustomerUUID(customer.getUuid());
         return orders.stream().map(orderMapper::toDetailsDTO).toList();
     }
 
-    public List<OrderDetailsDTO> findOrdersForRestaurant(UUID restaurantUUID) throws AccessDeniedException {
-        Restaurant restaurant = restaurantRepository.findById(restaurantUUID)
-                .orElseThrow(() -> new RestaurantNotFoundException(restaurantUUID));
+    public List<OrderDetailsDTO> findOrdersForRestaurant() throws AccessDeniedException {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        if (!restaurant.getEmail().equals(email)) {
-            throw new AccessDeniedException("You do not have permission to view this restaurant's orders.");
-        }
+        Restaurant restaurant = restaurantRepository.findByEmail(email)
+                .orElseThrow(() -> new RestaurantNotFoundException("Authenticated restaurant not found!"));
 
-        List<Order> orders = orderRepository.findByRestaurantUUID(restaurantUUID);
+        List<Order> orders = orderRepository.findByRestaurantUUID(restaurant.getUuid());
         return orders.stream().map(orderMapper::toDetailsDTO).toList();
     }
 
     // Create orders
 
     public boolean createOrder(CreateOrderRequestDTO createOrderRequest) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
         Customer customer = customerRepository.findById(createOrderRequest.customerUUID())
                 .orElseThrow(() -> new CustomerNotFoundException(createOrderRequest.customerUUID()));
         Restaurant restaurant = restaurantRepository.findById(createOrderRequest.restaurantUUID())
                 .orElseThrow(() -> new RestaurantNotFoundException(createOrderRequest.restaurantUUID()));
+
+        if (!customer.getUuid().equals(createOrderRequest.customerUUID())) {
+            throw new AccessDeniedException("You do not have permission to create this order.");
+        }
 
         Order order = new Order();
         order.setCustomer(customer);
@@ -129,21 +141,6 @@ public class OrderService {
 
         order.setProducts(orderItems);
         orderRepository.save(order);
-
-        return true;
-    }
-
-    /**
-     * This method grants a user only can execute update/delete actions with its own profile
-     */
-    private boolean canExecutePrivateAction(UUID uuid) throws AccessDeniedException {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        Restaurant toVerifyIfCanExecute = restaurantRepository.findByEmail(email)
-                .orElseThrow(() -> new RestaurantNotFoundException(uuid));
-
-        if (!toVerifyIfCanExecute.getUuid().equals(uuid)) {
-            throw new AccessDeniedException("You do not have permission to perform this action.");
-        }
 
         return true;
     }

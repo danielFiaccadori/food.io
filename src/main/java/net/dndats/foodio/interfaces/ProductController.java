@@ -30,7 +30,7 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<BaseResponse<List<ProductDetailsDTO>>> findAllProducts(Pageable pageable) {
-        List<ProductDetailsDTO> products = restaurantService.findAllProducts(pageable);
+        List<ProductDetailsDTO> products = restaurantService.findAllProductsForRestaurant(pageable);
         return ResponseEntity.ok().body(BaseResponse.ok(products));
     }
 

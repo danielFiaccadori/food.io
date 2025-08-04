@@ -7,7 +7,6 @@ import net.dndats.foodio.application.dto.restaurant.RestaurantDetailsDTO;
 import net.dndats.foodio.application.dto.restaurant.RestaurantFinancialStatisticsDTO;
 import net.dndats.foodio.application.dto.restaurant.SignUpRestaurantRequest;
 import net.dndats.foodio.application.dto.restaurant.UpdateRestaurantRequestDTO;
-import net.dndats.foodio.domain.exception.CustomerNotFoundException;
 import net.dndats.foodio.domain.exception.RestaurantNotFoundException;
 import net.dndats.foodio.domain.model.Order;
 import net.dndats.foodio.domain.model.OrderItem;
@@ -47,9 +46,11 @@ public class RestaurantService {
 
     // Operations
 
-    public RestaurantFinancialStatisticsDTO getStatistics(UUID uuid, LocalDateTime start, LocalDateTime end) {
-        Restaurant restaurant = repository.findById(uuid)
-                .orElseThrow(() -> new RestaurantNotFoundException(uuid));
+    public RestaurantFinancialStatisticsDTO getStatistics(LocalDateTime start, LocalDateTime end) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Restaurant restaurant = repository.findByEmail(email)
+                .orElseThrow(() -> new RestaurantNotFoundException("Authenticated restaurant not found!"));
 
         List<Order> orders = restaurant.getOrders();
 
@@ -78,8 +79,13 @@ public class RestaurantService {
         );
     }
 
-    public List<ProductDetailsDTO> findAllProducts(Pageable pageable) {
-        Page<Product> page = productRepository.findAll(pageable);
+    public List<ProductDetailsDTO> findAllProductsForRestaurant(Pageable pageable) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Restaurant restaurant = repository.findByEmail(email)
+                .orElseThrow(() -> new RestaurantNotFoundException("Authenticated restaurant not found!"));
+
+        Page<Product> page = productRepository.findAllByRestaurant(restaurant.getUuid(), pageable);
         return page.stream()
                 .map(productMapper::toDetailsDTO).toList();
     }
@@ -108,10 +114,11 @@ public class RestaurantService {
         mapper.toDetailsDTO(toSave);
     }
 
-    public boolean update(UUID toUpdateUUID, UpdateRestaurantRequestDTO updateRequestDTO) throws AccessDeniedException {
-        Restaurant toUpdateRestaurant = repository.findById(toUpdateUUID)
-                .orElseThrow(() -> new RestaurantNotFoundException(toUpdateUUID));
-        if (!canExecutePrivateAction(toUpdateUUID)) return false;
+    public boolean update(UpdateRestaurantRequestDTO updateRequestDTO) throws AccessDeniedException {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Restaurant toUpdateRestaurant = repository.findByEmail(email)
+                .orElseThrow(() -> new RestaurantNotFoundException("Authenticated restaurant not found!"));
 
         toUpdateRestaurant.setName(updateRequestDTO.name());
         toUpdateRestaurant.setDescription(updateRequestDTO.description());
@@ -122,27 +129,13 @@ public class RestaurantService {
         return true;
     }
 
-    public boolean delete(UUID uuid) throws AccessDeniedException {
-        Restaurant restaurant = repository.findById(uuid)
-                .orElseThrow(() -> new CustomerNotFoundException(uuid));
-        if (!canExecutePrivateAction(uuid)) return false;
-
-        repository.delete(restaurant);
-        return true;
-    }
-
-    /**
-     * This method grants a user only can execute update/delete actions with its own profile
-     */
-    private boolean canExecutePrivateAction(UUID uuid) throws AccessDeniedException {
+    public boolean delete() throws AccessDeniedException {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        Restaurant toVerifyIfCanExecute = repository.findByEmail(email)
-                .orElseThrow(() -> new RestaurantNotFoundException(uuid));
 
-        if (!toVerifyIfCanExecute.getUuid().equals(uuid)) {
-            throw new AccessDeniedException("You do not have permission to perform this action.");
-        }
+        Restaurant toDeleteRestaurant = repository.findByEmail(email)
+                .orElseThrow(() -> new RestaurantNotFoundException("Authenticated restaurant not found!"));
 
+        repository.delete(toDeleteRestaurant);
         return true;
     }
 
