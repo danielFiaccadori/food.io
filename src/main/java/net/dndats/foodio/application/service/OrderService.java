@@ -14,13 +14,14 @@ import net.dndats.foodio.infrastructure.repository.CustomerRepository;
 import net.dndats.foodio.infrastructure.repository.OrderRepository;
 import net.dndats.foodio.infrastructure.repository.ProductRepository;
 import net.dndats.foodio.infrastructure.repository.RestaurantRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class OrderService {
@@ -82,24 +83,24 @@ public class OrderService {
 
     // Locate orders
 
-    public List<OrderDetailsDTO> findOrdersForCustomer() throws AccessDeniedException {
+    public Page<OrderDetailsDTO> findOrdersForCustomer(Pageable pageable) throws AccessDeniedException {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         Customer customer = customerRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomerNotFoundException("Authenticated customer not found!"));
 
-        List<Order> orders = orderRepository.findByCustomerUUID(customer.getUuid());
-        return orders.stream().map(orderMapper::toDetailsDTO).toList();
+        Page<Order> orders = orderRepository.findByCustomerUUID(customer.getUuid(), pageable);
+        return orders.map(orderMapper::toDetailsDTO);
     }
 
-    public List<OrderDetailsDTO> findOrdersForRestaurant() throws AccessDeniedException {
+    public Page<OrderDetailsDTO> findOrdersForRestaurant(Pageable pageable) throws AccessDeniedException {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         Restaurant restaurant = restaurantRepository.findByEmail(email)
                 .orElseThrow(() -> new RestaurantNotFoundException("Authenticated restaurant not found!"));
 
-        List<Order> orders = orderRepository.findByRestaurantUUID(restaurant.getUuid());
-        return orders.stream().map(orderMapper::toDetailsDTO).toList();
+        Page<Order> orders = orderRepository.findByRestaurantUUID(restaurant.getUuid(), pageable);
+        return orders.map(orderMapper::toDetailsDTO);
     }
 
     // Create orders
@@ -107,8 +108,8 @@ public class OrderService {
     public boolean createOrder(CreateOrderRequestDTO createOrderRequest) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        Customer customer = customerRepository.findById(createOrderRequest.customerUUID())
-                .orElseThrow(() -> new CustomerNotFoundException(createOrderRequest.customerUUID()));
+        Customer customer = customerRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomerNotFoundException("Authenticated customer not found!"));
         Restaurant restaurant = restaurantRepository.findById(createOrderRequest.restaurantUUID())
                 .orElseThrow(() -> new RestaurantNotFoundException(createOrderRequest.restaurantUUID()));
 
@@ -140,6 +141,7 @@ public class OrderService {
         }
 
         order.setProducts(orderItems);
+        order.setOrderStatus(createOrderRequest.orderStatus() != null ? createOrderRequest.orderStatus() : OrderStatus.PENDING);
         orderRepository.save(order);
 
         return true;
