@@ -3,15 +3,9 @@ package net.dndats.foodio.application.service;
 import net.dndats.foodio.adapters.mapper.ProductMapper;
 import net.dndats.foodio.adapters.mapper.RestaurantMapper;
 import net.dndats.foodio.application.dto.product.ProductDetailsDTO;
-import net.dndats.foodio.application.dto.restaurant.RestaurantDetailsDTO;
-import net.dndats.foodio.application.dto.restaurant.RestaurantFinancialStatisticsDTO;
-import net.dndats.foodio.application.dto.restaurant.SignUpRestaurantRequest;
-import net.dndats.foodio.application.dto.restaurant.UpdateRestaurantRequestDTO;
+import net.dndats.foodio.application.dto.restaurant.*;
 import net.dndats.foodio.domain.exception.RestaurantNotFoundException;
-import net.dndats.foodio.domain.model.Order;
-import net.dndats.foodio.domain.model.OrderItem;
-import net.dndats.foodio.domain.model.Product;
-import net.dndats.foodio.domain.model.Restaurant;
+import net.dndats.foodio.domain.model.*;
 import net.dndats.foodio.infrastructure.repository.ProductRepository;
 import net.dndats.foodio.infrastructure.repository.RestaurantRepository;
 import org.springframework.data.domain.Page;
@@ -46,7 +40,7 @@ public class RestaurantService {
 
     // Operations
 
-    public RestaurantFinancialStatisticsDTO getStatistics(LocalDateTime start, LocalDateTime end) {
+    public RestaurantFinancialStatisticsDTO getFinancialStatistics(LocalDateTime start, LocalDateTime end) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         Restaurant restaurant = repository.findByEmail(email)
@@ -79,22 +73,58 @@ public class RestaurantService {
         );
     }
 
-    public List<ProductDetailsDTO> findAllProductsForRestaurant(Pageable pageable) {
+    public RestaurantOrderStatisticsDTO getOrderStatistics(LocalDateTime start, LocalDateTime end) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Restaurant restaurant = repository.findByEmail(email)
+                .orElseThrow(() -> new RestaurantNotFoundException("Authenticated restaurant not found!"));
+
+        List<Order> orders = restaurant.getOrders().stream().filter(order -> {
+            LocalDateTime createdAt = order.getCreatedAt();
+            return (start == null || !createdAt.isBefore(start)) &&
+                   (end == null || !createdAt.isAfter(end));
+        }).toList();
+
+        long totalOrders = orders.size();
+        long acceptedOrders = orders.stream()
+                .filter(order -> order.getOrderStatus().equals(OrderStatus.ACCEPTED)).count();
+        long rejectedOrders = orders.stream()
+                .filter(order -> order.getOrderStatus().equals(OrderStatus.REJECTED)).count();
+        long pendingOrders = orders.stream()
+                .filter(order -> order.getOrderStatus().equals(OrderStatus.PENDING)).count();
+
+        return new RestaurantOrderStatisticsDTO(
+                totalOrders,
+                acceptedOrders,
+                rejectedOrders,
+                pendingOrders
+        );
+    }
+
+    public Page<ProductDetailsDTO> findAllProductsForRestaurant(Pageable pageable) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         Restaurant restaurant = repository.findByEmail(email)
                 .orElseThrow(() -> new RestaurantNotFoundException("Authenticated restaurant not found!"));
 
         Page<Product> page = productRepository.findAllByRestaurant(restaurant.getUuid(), pageable);
-        return page.stream()
-                .map(productMapper::toDetailsDTO).toList();
+        return page.map(productMapper::toDetailsDTO);
     }
 
     // CRUD
 
-    public List<RestaurantDetailsDTO> findAll(Pageable pageable) {
+    public RestaurantDetailsDTO getAuthenticatedRestaurantDetails() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Restaurant restaurant = repository.findByEmail(email)
+                .orElseThrow(() -> new RestaurantNotFoundException("Authenticated restaurant not found!"));
+
+        return mapper.toDetailsDTO(restaurant);
+    }
+
+    public Page<RestaurantDetailsDTO> findAll(Pageable pageable) {
         Page<Restaurant> page = repository.findAll(pageable);
-        return page.stream().map(mapper::toDetailsDTO).toList();
+        return page.map(mapper::toDetailsDTO);
     }
 
     public RestaurantDetailsDTO findById(UUID uuid) {

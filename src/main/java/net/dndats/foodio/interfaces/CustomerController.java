@@ -8,6 +8,7 @@ import net.dndats.foodio.application.dto.order.OrderDetailsDTO;
 import net.dndats.foodio.application.response.BaseResponse;
 import net.dndats.foodio.application.service.CustomerService;
 import net.dndats.foodio.application.service.OrderService;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -42,8 +43,8 @@ public class CustomerController {
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/orders")
-    public ResponseEntity<BaseResponse<List<OrderDetailsDTO>>> getOrders() {
-        List<OrderDetailsDTO> orders = orderService.findOrdersForCustomer();
+    public ResponseEntity<BaseResponse<Page<OrderDetailsDTO>>> getOrders(Pageable pageable) {
+        Page<OrderDetailsDTO> orders = orderService.findOrdersForCustomer(pageable);
         return ResponseEntity.ok().body(BaseResponse.ok(orders));
     }
 
